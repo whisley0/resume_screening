@@ -1,10 +1,9 @@
 selenium
 webdriver-manager
 textract
-re
 string
 pandas
-matplotlib.pyplot
+matplotlib
 docx2txt
 streamlit
 time
