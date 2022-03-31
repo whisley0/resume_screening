@@ -26,6 +26,7 @@ from parsel import Selector
 #nlp library for extracting name from CV
 import spacy
 from spacy.matcher import Matcher
+import io
 from io import StringIO
 from collections import Counter
 from spacy.matcher import PhraseMatcher
@@ -106,7 +107,8 @@ def upload_validate(file):
 
             #pdf
             elif file.type == "application/pdf":
-                with pdfplumber.open(file) as pdf:
+                content = io.BytesIO(file.read())
+                with pdfplumber.open(content) as pdf:
                     pages = pdf.pages
                     all_text = '' # new line
                     for p in pages:
