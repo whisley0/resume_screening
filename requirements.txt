@@ -5,8 +5,6 @@ pandas
 matplotlib
 docx2txt
 streamlit
-time
-os
 pdfplumber
 plotly
 parsel 
