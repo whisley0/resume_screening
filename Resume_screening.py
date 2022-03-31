@@ -107,8 +107,10 @@ def upload_validate(file):
 
             #pdf
             elif file.type == "application/pdf":
-                content = io.BytesIO(file.read())
-                with pdfplumber.open(content) as pdf:
+                
+                save_uploadedfile(file)
+
+                with pdfplumber.open(file) as pdf:
                     pages = pdf.pages
                     all_text = '' # new line
                     for p in pages:
@@ -121,6 +123,14 @@ def upload_validate(file):
                 raw_text = docx2txt.process(file)
                 time.sleep(1)
                 return raw_text
+
+def extract_data(feed):
+    data = ""
+    with pdfplumber.load(feed) as pdf:
+        pages = pdf.pages
+        for p in pages:
+            data = data + p.extract_text()
+    return data
 
 def login_2_linkedin(driver):
     
