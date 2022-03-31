@@ -108,8 +108,10 @@ def upload_validate(file):
 
             #pdf
             elif file.type == "application/pdf":
+
+                save_uploadedfile(file)
                 
-                with fitz.open(file) as pdf:
+                with fitz.open(os.path.join("./", file.name)) as pdf:
                     text = ""
                     for page in pdf:
                         text += page.get_text()
