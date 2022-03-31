@@ -9,9 +9,5 @@ time
 os
 pdfplumber
 plotly
-time
 parsel 
 spacy
-io
-collections
-os
