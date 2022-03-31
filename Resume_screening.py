@@ -106,11 +106,13 @@ def upload_validate(file):
 
             #pdf
             elif file.type == "application/pdf":
-                pdf = pdfplumber.open(file) 
-                page = pdf.pages[0]
-                text = page.extract_text()
-                st.write(text)
-                return text
+                with pdfplumber.load(file) as pdf:
+                    pages = pdf.pages
+                    all_text = '' # new line
+                    for p in pages:
+                        single_page_text = p.extract_text()
+                        all_text = all_text + '\n' + single_page_text
+                return all_text
 
             elif file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                 
