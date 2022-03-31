@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run Resume_screening.py
+web: sh setup.sh && streamlit run .streamlit/Resume_screening.py
