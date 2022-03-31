@@ -106,7 +106,7 @@ def upload_validate(file):
 
             #pdf
             elif file.type == "application/pdf":
-                with pdfplumber.load(file) as pdf:
+                with pdfplumber.open(file) as pdf:
                     pages = pdf.pages
                     all_text = '' # new line
                     for p in pages:
@@ -344,7 +344,7 @@ def main():
                 wc_df = wc_df.drop_duplicates(subset = ["Keyword"])
                 wc_df["Count"] = pd.to_numeric(wc_df["Count"])
                 wc_dict = dict(zip(wc_df.Keyword, wc_df.Count))
-                wc = WordCloud(background_color='white')
+                wc = WordCloud(width=800, height=400, background_color='white')
                 wc.generate_from_frequencies(wc_dict)
                 fig2, ax2 = plt.subplots()
                 plt.imshow(wc, interpolation="nearest", aspect="auto")
