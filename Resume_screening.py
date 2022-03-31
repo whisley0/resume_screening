@@ -12,6 +12,7 @@ import os
 import pdfplumber
 import plotly.express as px
 import re
+from wordcloud import WordCloud
 
 #selenium related library
 from time import sleep
@@ -33,39 +34,14 @@ from spacy.matcher import PhraseMatcher
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
+#create chrome driver option and path:
+PATH = "chromedriver.exe" 
+
 # load pre-trained model
 nlp = spacy.load('en_core_web_sm')
 
 # initialize matcher with a vocab
 matcher = Matcher(nlp.vocab)
-
-# Create dictionary with industrial and system engineering key terms by area
-terms = {'Quality/Six Sigma':['black belt','capability analysis','control charts','doe','dmaic','fishbone',
-                              'gage r&r', 'green belt','ishikawa','iso','kaizen','kpi','lean','metrics',
-                              'pdsa','performance improvement','process improvement','quality',
-                              'quality circles','quality tools','root cause','six sigma',
-                              'stability analysis','statistical analysis','tqm'],      
-        'Operations management':['automation','bottleneck','constraints','cycle time','efficiency','fmea',
-                                 'machinery','maintenance','manufacture','line balancing','oee','operations',
-                                 'operations research','optimization','overall equipment effectiveness',
-                                 'pfmea','process','process mapping','production','resources','safety',
-                                 'stoppage','value stream mapping','utilization'],
-        'Supply chain':['abc analysis','apics','customer','customs','delivery','distribution','eoq','epq',
-                        'fleet','forecast','inventory','logistic','materials','outsourcing','procurement',
-                        'reorder point','rout','safety stock','scheduling','shipping','stock','suppliers',
-                        'third party logistics','transport','transportation','traffic','supply chain',
-                        'vendor','warehouse','wip','work in progress'],
-        'Project management':['administration','agile','budget','cost','direction','feasibility analysis',
-                              'finance','kanban','leader','leadership','management','milestones','planning',
-                              'pmi','pmp','problem','project','risk','schedule','scrum','stakeholders'],
-        'Data analytics':['analytics','api','aws','big data','busines intelligence','clustering','code',
-                          'coding','data','database','data mining','data science','deep learning','hadoop',
-                          'hypothesis test','iot','internet','machine learning','modeling','nosql','nlp',
-                          'predictive','programming','python','r','sql','tableau','text mining',
-                          'visualuzation']}
-
-#create chrome driver option and path:
-PATH = "chromedriver.exe" 
 
 options = Options()
 options.add_argument("--headless")
@@ -109,75 +85,6 @@ def text_cleansing(text):
 
     return text
 
-def convert_txt_to_df(text):
-    
-    # Convert all strings to lowercase
-    text_ = text.lower()
-
-    # Remove numbers
-    text_ = re.sub(r'\d+','',text_)
-
-    # Remove punctuation
-    text_ = text_.translate(str.maketrans('','',string.punctuation))
-    
-    # Initializie score counters for each area
-    quality = 0
-    operations = 0
-    supplychain = 0
-    project = 0
-    data = 0
-    
-    # Create an empty list where the scores will be stored
-    scores = []
-
-    # Obtain the scores for each area
-    for area in terms.keys():
-        
-        if area == 'Quality/Six Sigma':
-            for word in terms[area]:
-                if word in text:
-                    quality +=1
-            scores.append(quality)
-        
-        elif area == 'Operations management':
-            for word in terms[area]:
-                if word in text:
-                    operations +=1
-            scores.append(operations)
-        
-        elif area == 'Supply chain':
-            for word in terms[area]:
-                if word in text:
-                    supplychain +=1
-            scores.append(supplychain)
-        
-        elif area == 'Project management':
-            for word in terms[area]:
-                if word in text:
-                    project +=1
-            scores.append(project)
-        
-        elif area == 'Data analytics':
-            for word in terms[area]:
-                if word in text:
-                    data +=1
-            scores.append(data)
-            
-    # Create a data frame with the scores summary
-    summary = pd.DataFrame(scores,index=terms.keys(),columns=['score']).sort_values(by='score',ascending=False)
-    
-    return summary
-
-def plot_df(df):
-
-    # Pie chart, where the slices will be ordered and plotted counter-clockwise:
-    explode = (0.1, 0.1, 0, 0, 0)  # only "explode" the 2nd slice (i.e. 'Hogs')
-
-    fig1, ax1 = plt.subplots()
-    ax1.pie(df['score'], explode=explode, labels=df.index, autopct='%1.1f%%', shadow=True, startangle=90)
-    ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-
-    st.pyplot(fig1)
 
 def upload_validate(file):
     
@@ -406,35 +313,11 @@ def main():
             "Choose Resume Doc", type=['txt', 'docx', 'pdf'], key="document_file_uploader")
 
     #Start conversion
-    but1, but2, but3= st.columns(3)
+    but1, but2= st.columns(2)
 
     if docx_file is not None:
 
-        # Create a simple button
-        if but1.button('Skill set distribution'):
-            raw_text = upload_validate(docx_file)
-            text = text_cleansing(raw_text)
-            data_frame = convert_txt_to_df(text)
-            plot_df(data_frame)
-
-        if(but2.button('Linkedin Interest')):
-            #change for heroku
-            driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options) 
-            raw_text = upload_validate(docx_file)
-            text = text_cleansing(raw_text)
-            name = extract_name_from_cv(text.replace('\n', ' ').replace('\t', ' '))
-        
-            if name != '':
-                st.write("Searching linkedin page using name : " + name + "...")
-                url = search_linkedin_url(driver, name)
-                st.write(url[0])
-                login_2_linkedin(driver)
-                st.write(getLinkedinInterest(driver, url[0]))
-
-            else: 
-                st.write('we cannot find the name from the CV')
-
-        if(but3.button('JD Matching')):
+        if(but1.button('JD Matching')):
             #read in the cv
             raw_text = upload_validate(docx_file)
             text = text_cleansing(raw_text)
@@ -445,10 +328,53 @@ def main():
                 jd_dict = jd.to_dict('list')
                 new_dict = jdlist_cleansing(jd_dict)
                 df = produce_ability_matrix(new_dict, text)
-                st.write(df)
+                
+                # group by based on month and year after filtering poor graded students
+                data = df.groupby(['Subject']).size().reset_index(name= 'count')
+                # Pie chart, where the slices will be ordered and plotted counter-clockwise:
+    
+                fig1, ax1 = plt.subplots()
+
+                ax1.pie(data['count'], labels=data.Subject, autopct='%1.1f%%', shadow=True, startangle=90)
+                ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+                st.write('1. Distribution of the candidate''s skillset')
+                st.pyplot(fig1)
+                
+                # create hit wordcloud
+                wc_df = df.drop('Subject', 1)
+                wc_df = wc_df.drop_duplicates(subset = ["Keyword"])
+                wc_df["Count"] = pd.to_numeric(wc_df["Count"])
+                wc_dict = dict(zip(wc_df.Keyword, wc_df.Count))
+                wc = WordCloud(background_color='white')
+                wc.generate_from_frequencies(wc_dict)
+                fig2, ax2 = plt.subplots()
+                plt.imshow(wc, interpolation='bilinear')
+                plt.axis("off")
+                plt.show()
+                st.write('2. Skills that match the JD')
+                st.pyplot(fig2)
+                
             else:
                 st.text('Please select a valid jd in the left panel...')
 
+        if(but2.button('Linkedin Interest')):
+            #change for heroku
+            #driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options) 
+            driver = webdriver.Chrome(executable_path=PATH, options=options) 
+            raw_text = upload_validate(docx_file)
+            text = text_cleansing(raw_text)
+            name = extract_name_from_cv(text.replace('\n', ' ').replace('\t', ' '))
+        
+            if name != '':
+                st.write("Searching linkedin page using name : " + name + "...")
+                url = search_linkedin_url(driver, name)
+                st.write(url)
+                login_2_linkedin(driver)
+                st.write(getLinkedinInterest(driver, url))
+
+            else: 
+                st.write('we cannot find the name from the CV')
 
     else:
         st.text('Please select a valid summary in the left panel...')
