@@ -1,7 +1,6 @@
 selenium
 webdriver-manager
 textract
-string
 pandas
 matplotlib
 docx2txt
