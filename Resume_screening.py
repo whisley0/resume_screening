@@ -44,7 +44,7 @@ nlp = spacy.load('en_core_web_sm')
 matcher = Matcher(nlp.vocab)
 
 options = Options()
-#options.add_argument("--headless")
+options.add_argument("--headless")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--disable-gpu")
@@ -106,16 +106,12 @@ def upload_validate(file):
 
             #pdf
             elif file.type == "application/pdf":
-                try:
-                    with pdfplumber.open(file) as pdf:
-                        page = pdf.pages[0]
-                        time.sleep(1)
-                        #save_uploadedfile(file)
-                        return page.extract_text()
+                pdf = pdfplumber.open(file) 
+                page = pdf.pages[0]
+                text = page.extract_text()
+                st.write(text)
+                return text
 
-                except:
-                    st.write("None")
-                    #docx
             elif file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                 
                 raw_text = docx2txt.process(file)
@@ -349,7 +345,7 @@ def main():
                 wc = WordCloud(background_color='white')
                 wc.generate_from_frequencies(wc_dict)
                 fig2, ax2 = plt.subplots()
-                plt.imshow(wc, interpolation='bilinear')
+                plt.imshow(wc, interpolation="nearest", aspect="auto")
                 plt.axis("off")
                 plt.show()
                 st.write('2. Skills that match the JD')
