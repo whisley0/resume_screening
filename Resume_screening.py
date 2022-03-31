@@ -13,6 +13,7 @@ import pdfplumber
 import plotly.express as px
 import re
 from wordcloud import WordCloud
+import fitz
 
 #selenium related library
 from time import sleep
@@ -108,15 +109,12 @@ def upload_validate(file):
             #pdf
             elif file.type == "application/pdf":
                 
-                save_uploadedfile(file)
+                with fitz.open(file) as pdf:
+                    text = ""
+                    for page in pdf:
+                        text += page.get_text()
 
-                with pdfplumber.open(os.path.join("./", file.name)) as pdf:
-                    pages = pdf.pages
-                    all_text = '' # new line
-                    for p in pages:
-                        single_page_text = p.extract_text()
-                        all_text = all_text + '\n' + single_page_text
-                return all_text
+                return text
 
             elif file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                 
