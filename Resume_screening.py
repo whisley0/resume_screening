@@ -11,6 +11,7 @@ import time
 import os
 import pdfplumber
 import plotly.express as px
+import re
 
 #selenium related library
 from time import sleep
