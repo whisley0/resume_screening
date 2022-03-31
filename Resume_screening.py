@@ -49,6 +49,7 @@ options = Options()
 options.add_argument("--headless")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--disable-setuid-sandbox")
 options.add_argument("--disable-gpu")
 options.add_argument("--disable-features=NetworkService")
 options.add_argument("--window-size=1920x1080")
@@ -72,7 +73,7 @@ def save_uploadedfile(uploadedfile):
         with open(os.path.join("tempDir", uploadedfile.name), "wb") as f:
             f.write(uploadedfile.getbuffer())
 
-    return st.success("Saved File: {} to tempDir".format(uploadedfile.name))
+    #return st.success("Saved File: {} to tempDir".format(uploadedfile.name))
 
 def text_cleansing(text):
 
