@@ -285,7 +285,7 @@ def extract_name_from_cv(resume_text):
     df1 = pd.DataFrame(df.Keywords_List.str.split('/',4).tolist(),columns = ['Subject','Keyword', 'length', 'end'])
     dfObj = df1.sort_values(by ='length', ascending=False)
     
-    print(dfObj)
+    st.write(dfObj)
 
     return dfObj['Keyword'].iloc[0]
    
