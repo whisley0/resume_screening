@@ -44,7 +44,7 @@ nlp = spacy.load('en_core_web_sm')
 matcher = Matcher(nlp.vocab)
 
 options = Options()
-options.add_argument("--headless")
+#options.add_argument("--headless")
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--disable-gpu")
@@ -360,8 +360,8 @@ def main():
 
         if(but2.button('Linkedin Interest')):
             #change for heroku
-            #driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options) 
-            driver = webdriver.Chrome(executable_path=PATH, options=options) 
+            driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options) 
+            #driver = webdriver.Chrome(executable_path=PATH, options=options) 
             raw_text = upload_validate(docx_file)
             text = text_cleansing(raw_text)
             name = extract_name_from_cv(text.replace('\n', ' ').replace('\t', ' '))
@@ -369,9 +369,9 @@ def main():
             if name != '':
                 st.write("Searching linkedin page using name : " + name + "...")
                 url = search_linkedin_url(driver, name)
-                st.write(url)
+                st.write(url[0])
                 login_2_linkedin(driver)
-                st.write(getLinkedinInterest(driver, url))
+                st.write(getLinkedinInterest(driver, url[0]))
 
             else: 
                 st.write('we cannot find the name from the CV')
