@@ -110,7 +110,7 @@ def upload_validate(file):
                 
                 save_uploadedfile(file)
 
-                with pdfplumber.open(file) as pdf:
+                with pdfplumber.open(os.path.join("./", file.name)) as pdf:
                     pages = pdf.pages
                     all_text = '' # new line
                     for p in pages:
