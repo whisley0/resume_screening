@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 # Import required libraries
-import PyPDF2
 import textract
-import re
 import string
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -419,11 +417,10 @@ def main():
             plot_df(data_frame)
 
         if(but2.button('Linkedin Interest')):
-
-            driver = webdriver.Chrome(PATH, options=options) 
+            #change for heroku
+            driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options) 
             raw_text = upload_validate(docx_file)
             text = text_cleansing(raw_text)
-            print(text)
             name = extract_name_from_cv(text.replace('\n', ' ').replace('\t', ' '))
         
             if name != '':
