@@ -36,6 +36,9 @@ from spacy.matcher import PhraseMatcher
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
+#import linkedin api
+from linkedin_api import Linkedin
+
 #create chrome driver option and path:
 PATH = "chromedriver.exe" 
 
@@ -203,7 +206,7 @@ def extract_name_from_cv(resume_text):
     df1 = pd.DataFrame(df.Keywords_List.str.split('/',4).tolist(),columns = ['Subject','Keyword', 'length', 'end'])
     dfObj = df1.sort_values(by ='length', ascending=False)
     
-    st.write(dfObj)
+    #st.write(dfObj)
 
     return dfObj['Keyword'].iloc[0]
    
@@ -369,7 +372,7 @@ def main():
             else:
                 st.text('Please select a valid jd in the left panel...')
 
-        if(but2.button('Linkedin Interest')):
+        if(but2.button('Linkedin Profile & Feeds')):
             #change for heroku
             driver = webdriver.Chrome(executable_path=os.environ.get("CHROMEDRIVER_PATH"), options=options) 
             #driver = webdriver.Chrome(executable_path=PATH, options=options) 
@@ -381,8 +384,21 @@ def main():
                 st.write("Searching linkedin page using name : " + name + "...")
                 url = search_linkedin_url(driver, name)
                 st.write(url[0])
-                login_2_linkedin(driver)
-                st.write(getLinkedinInterest(driver, url[0]))
+                public_id = url[0].split('in/')[1]
+
+                #login_2_linkedin(driver)
+                api = Linkedin('edward_lam@vfc.com', 'Today2022')
+
+                st.write("Profile:")
+
+                # GET a profile
+                profile = api.get_profile(public_id)
+                st.write(profile)
+
+                # GET feed
+                st.write("Feed:")
+                feed_post = api.get_feed_posts(10)
+                st.write(feed_post)
 
             else: 
                 st.write('we cannot find the name from the CV')
